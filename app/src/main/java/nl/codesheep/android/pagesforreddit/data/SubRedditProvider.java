@@ -15,6 +15,7 @@ public class SubRedditProvider {
 
     interface Path {
         String SUBREDDITS = "subreddits";
+        String LISTINGS = "listings";
     }
 
     private SubRedditProvider() {
@@ -37,4 +38,11 @@ public class SubRedditProvider {
         public static final Uri SUBREDDITS = buildUri(Path.SUBREDDITS);
     }
 
+    public static class Listings {
+        @ContentUri(
+                path = Path.LISTINGS,
+                type = "vnd.android.cursor.dir/listings"
+        )
+        public static final Uri LISTINGS = buildUri(Path.LISTINGS);
+    }
 }
