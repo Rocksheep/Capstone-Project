@@ -14,6 +14,10 @@ public interface RedditPostsTable  {
     @DataType(DataType.Type.TEXT) @NotNull String TITLE = "title";
     @DataType(DataType.Type.TEXT) @NotNull String AUTHOR = "author";
     @DataType(DataType.Type.TEXT) @NotNull String PERMALINK = "permalink";
+    @DataType(DataType.Type.INTEGER) @NotNull String UPS = "ups";
+    @DataType(DataType.Type.INTEGER) @NotNull String DOWNS = "downs";
+    @DataType(DataType.Type.INTEGER) @NotNull String NUM_COMMENTS = "num_comments";
+
 
 
     String[] PROJECTION = new String[] {
@@ -22,6 +26,9 @@ public interface RedditPostsTable  {
             SUBREDDIT,
             TITLE,
             AUTHOR,
-            PERMALINK
+            PERMALINK,
+            UPS,
+            DOWNS,
+            NUM_COMMENTS
     };
 }

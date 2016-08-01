@@ -11,4 +11,6 @@
     <string name="add_subreddit">Add Subreddit</string>
     <string name="sign_in">Log in</string>
     <string name="no_posts">No posts available</string>
+    <string name="num_comments">%1$d Comments</string>
+    <string name="post.details">%1$s • %2$s • %3$s</string>
 </resources>

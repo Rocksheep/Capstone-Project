@@ -38,12 +38,20 @@ public class ContentFragment extends Fragment {
         }
         else {
             View rootView = inflater.inflate(R.layout.content_fragment, container, false);
-            RedditPost redditPost = RedditPost.createFromCursor(cursor);
-
-            TextView titleView = (TextView) rootView.findViewById(R.id.post_title);
-            titleView.setText(redditPost.title);
-            TextView authorView = (TextView) rootView.findViewById(R.id.post_author);
-            authorView.setText(redditPost.author);
+            if (cursor.moveToNext()) {
+                RedditPost redditPost = RedditPost.createFromCursor(cursor);
+                TextView titleView = (TextView) rootView.findViewById(R.id.post_title);
+                titleView.setText(redditPost.title);
+                TextView authorView = (TextView) rootView.findViewById(R.id.post_author);
+                String details = String.format(getContext().getString(R.string.post_details), redditPost.author, "2 hours ago", redditPost.subreddit);
+                authorView.setText(details);
+                TextView numCommentsView = (TextView) rootView.findViewById(R.id.post_comments);
+                String numComments = String.format(getContext().getString(R.string.num_comments), redditPost.numComments);
+                numCommentsView.setText(numComments);
+                TextView points = (TextView) rootView.findViewById(R.id.post_points);
+                points.setText(Integer.toString(redditPost.ups - redditPost.downs));
+            }
+            cursor.close();
             return rootView;
         }
 

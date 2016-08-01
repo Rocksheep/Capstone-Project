@@ -56,18 +56,20 @@
                         android:layout_marginRight="4dp"
                         android:layout_marginEnd="4dp"/>
                     <TextView
+                        android:id="@+id/post_comments"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_gravity="center"
-                        android:text="6234 Comments"/>
+                        tools:text="6234 Comments"/>
                     <TextView
+                        android:id="@+id/post_points"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginRight="8dp"
                         android:layout_marginEnd="8dp"
                         android:layout_gravity="center"
-                        android:text="352"/>
+                        tools:text="352"/>
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
