@@ -5,6 +5,7 @@ import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncRequest;
 import android.content.SyncResult;
@@ -14,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import nl.codesheep.android.pagesforreddit.R;
+import nl.codesheep.android.pagesforreddit.data.RedditProvider;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.ListingResponse;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.RedditPostMeta;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.RedditService;
@@ -60,7 +62,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void deleteOldData() {
-//        mContentResolver.delete(SubRedditProvider.Listings.LISTINGS, null, null);
+        mContentResolver.delete(RedditProvider.Posts.POSTS, null, null);
     }
 
     private void syncListings(Call<ListingResponse> call) {
@@ -69,7 +71,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             public void onResponse(Call<ListingResponse> call, Response<ListingResponse> response) {
                 Log.d(TAG, "Response received");
                 for (RedditPostMeta postMeta : response.body().listing.redditPostMetas) {
-                    Log.d(TAG, "Post: " + postMeta.redditPost.title + "@" + postMeta.redditPost.subreddit);
+                    ContentValues values = postMeta.redditPost.toContentValues();
+                    mContentResolver.insert(
+                            RedditProvider.Posts.POSTS,
+                            values
+                    );
                 }
             }
 

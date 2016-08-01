@@ -10,4 +10,5 @@
     <string name="account_type" translatable="false">pagesforeddit.android.codesheep.nl</string>
     <string name="add_subreddit">Add Subreddit</string>
     <string name="sign_in">Log in</string>
+    <string name="no_posts">No posts available</string>
 </resources>

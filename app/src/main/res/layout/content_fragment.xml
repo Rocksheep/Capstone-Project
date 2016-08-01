@@ -26,21 +26,22 @@
                     android:adjustViewBounds="true"
                     android:src="@drawable/example_post" />
                 <TextView
+                    android:id="@+id/post_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="@style/AppTheme.Title"
                     android:layout_marginTop="8dp"
                     android:layout_marginRight="16dp"
                     android:layout_marginLeft="16dp"
-                    tools:text="Cute little monster"
-                    android:text="Cute little monster"/>
+                    tools:text="Cute little monster"/>
                 <TextView
+                    android:id="@+id/post_author"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="16dp"
                     android:layout_marginRight="16dp"
                     android:textSize="12sp"
-                    android:text="Rocksheep • 4 hours ago • /r/aww"/>
+                    tools:text="Rocksheep • 4 hours ago • /r/aww"/>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

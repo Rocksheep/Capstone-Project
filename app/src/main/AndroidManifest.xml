@@ -25,7 +25,7 @@
 
         <provider
             android:authorities="@string/content_authority"
-            android:name=".data.generated.SubRedditProvider"
+            android:name=".data.generated.RedditProvider"
             android:exported="false"
             android:syncable="true" />
 

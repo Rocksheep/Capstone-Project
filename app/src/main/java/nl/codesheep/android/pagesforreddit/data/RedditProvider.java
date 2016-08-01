@@ -6,8 +6,8 @@ import net.simonvt.schematic.annotation.ContentProvider;
 import net.simonvt.schematic.annotation.ContentUri;
 import net.simonvt.schematic.annotation.TableEndpoint;
 
-@ContentProvider(authority= SubRedditProvider.AUTHORITY, database = PagesDatabase.class)
-public class SubRedditProvider {
+@ContentProvider(authority= RedditProvider.AUTHORITY, database = PagesDatabase.class)
+public class RedditProvider {
 
     public static final String AUTHORITY =
             "nl.codesheep.android.pagesforreddit";
@@ -15,10 +15,10 @@ public class SubRedditProvider {
 
     interface Path {
         String SUBREDDITS = "subreddits";
-        String LISTINGS = "listings";
+        String POSTS = "posts";
     }
 
-    private SubRedditProvider() {
+    private RedditProvider() {
 
     }
 
@@ -38,11 +38,12 @@ public class SubRedditProvider {
         public static final Uri SUBREDDITS = buildUri(Path.SUBREDDITS);
     }
 
-    public static class Listings {
+    @TableEndpoint(table = PagesDatabase.REDDIT_POSTS)
+    public static class Posts {
         @ContentUri(
-                path = Path.LISTINGS,
-                type = "vnd.android.cursor.dir/listings"
+                path = Path.POSTS,
+                type = "vnd.android.cursor.dir/posts"
         )
-        public static final Uri LISTINGS = buildUri(Path.LISTINGS);
+        public static final Uri POSTS = buildUri(Path.POSTS);
     }
 }

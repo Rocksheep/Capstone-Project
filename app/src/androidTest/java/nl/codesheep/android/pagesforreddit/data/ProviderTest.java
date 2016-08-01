@@ -8,17 +8,17 @@ import android.util.Log;
 
 import org.junit.Test;
 
-import nl.codesheep.android.pagesforreddit.data.generated.SubRedditProvider;
+import nl.codesheep.android.pagesforreddit.data.generated.RedditProvider;
 import nl.codesheep.android.pagesforreddit.data.models.SubReddit;
 
-import static nl.codesheep.android.pagesforreddit.data.SubRedditProvider.SubReddits.SUBREDDITS;
+import static nl.codesheep.android.pagesforreddit.data.RedditProvider.SubReddits.SUBREDDITS;
 
-public class ProviderTest extends ProviderTestCase2<SubRedditProvider> {
+public class ProviderTest extends ProviderTestCase2<RedditProvider> {
     private static final String TAG = ProviderTest.class.getSimpleName();
     private static MockContentResolver resolver;
 
     public ProviderTest() {
-        super(SubRedditProvider.class, SubRedditProvider.AUTHORITY);
+        super(RedditProvider.class, RedditProvider.AUTHORITY);
     }
 
     @Override
