@@ -13,11 +13,22 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
+import java.util.List;
+
 import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
 import nl.codesheep.android.pagesforreddit.data.RedditProvider;
 import nl.codesheep.android.pagesforreddit.data.models.RedditPost;
+import nl.codesheep.android.pagesforreddit.sync.redditapi.DetailsListingResponse;
+import nl.codesheep.android.pagesforreddit.sync.redditapi.ListingResponse;
+import nl.codesheep.android.pagesforreddit.sync.redditapi.RedditService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-public class ContentFragment extends Fragment {
+public class ContentFragment extends Fragment implements Callback<List<DetailsListingResponse>> {
 
     public static final String TAG = ContentFragment.class.getSimpleName();
 
@@ -52,6 +63,14 @@ public class ContentFragment extends Fragment {
                     Picasso.with(getContext()).load(redditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
                 }
 
+                Log.d(TAG, "Full link: " + redditPost.permalink);
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(RedditService.BASE_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
+                service.details(redditPost.permalink).enqueue(this);
+
                 TextView titleView = (TextView) rootView.findViewById(R.id.post_title);
                 titleView.setText(redditPost.title);
                 TextView authorView = (TextView) rootView.findViewById(R.id.post_author);
@@ -66,6 +85,28 @@ public class ContentFragment extends Fragment {
             cursor.close();
             return rootView;
         }
+
+    }
+
+    @Override
+    public void onResponse(Call<List<DetailsListingResponse>> call, Response<List<DetailsListingResponse>> response) {
+
+            Log.d(TAG, call.request().url().toString());
+
+        List<DetailsListingResponse> details = response.body();
+        if (details != null) {
+            List<DetailsListingResponse.RedditComment> comments = details.get(0).listing.comments;
+            for (DetailsListingResponse.RedditComment comment : comments) {
+                Log.d(TAG, "Comment: " + comment.body);
+            }
+        }
+        else {
+            Log.d(TAG, "No comments");
+        }
+    }
+
+    @Override
+    public void onFailure(Call<List<DetailsListingResponse>> call, Throwable t) {
 
     }
 }
