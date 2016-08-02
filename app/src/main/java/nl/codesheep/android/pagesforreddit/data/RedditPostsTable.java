@@ -17,6 +17,9 @@ public interface RedditPostsTable  {
     @DataType(DataType.Type.INTEGER) @NotNull String UPS = "ups";
     @DataType(DataType.Type.INTEGER) @NotNull String DOWNS = "downs";
     @DataType(DataType.Type.INTEGER) @NotNull String NUM_COMMENTS = "num_comments";
+    @DataType(DataType.Type.TEXT) String SELFTEXT = "selftext";
+    @DataType(DataType.Type.TEXT) String IMAGE_URL = "image_url";
+    @DataType(DataType.Type.TEXT) String THUMBNAIL_URL = "thumb_url";
 
 
 
@@ -29,6 +32,9 @@ public interface RedditPostsTable  {
             PERMALINK,
             UPS,
             DOWNS,
-            NUM_COMMENTS
+            NUM_COMMENTS,
+            SELFTEXT,
+            IMAGE_URL,
+            THUMBNAIL_URL
     };
 }

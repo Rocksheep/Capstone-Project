@@ -4,10 +4,14 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
 import nl.codesheep.android.pagesforreddit.data.RedditProvider;
@@ -15,7 +19,7 @@ import nl.codesheep.android.pagesforreddit.data.models.RedditPost;
 
 public class ContentFragment extends Fragment {
 
-    public static final String LOG = ContentFragment.class.getSimpleName();
+    public static final String TAG = ContentFragment.class.getSimpleName();
 
     public ContentFragment() {
 
@@ -40,6 +44,14 @@ public class ContentFragment extends Fragment {
             View rootView = inflater.inflate(R.layout.content_fragment, container, false);
             if (cursor.moveToNext()) {
                 RedditPost redditPost = RedditPost.createFromCursor(cursor);
+                Log.d(TAG, "Loading image: " + redditPost.imageUrl);
+
+                if (redditPost.thumbnailUrl != null) {
+                    Log.d(TAG, "Loading thumbnail " + redditPost.thumbnailUrl);
+                    ImageView imageView = (ImageView) rootView.findViewById(R.id.post_image);
+                    Picasso.with(getContext()).load(redditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
+                }
+
                 TextView titleView = (TextView) rootView.findViewById(R.id.post_title);
                 titleView.setText(redditPost.title);
                 TextView authorView = (TextView) rootView.findViewById(R.id.post_author);
