@@ -1,8 +1,14 @@
 package nl.codesheep.android.pagesforreddit;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,10 +16,23 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
+import nl.codesheep.android.pagesforreddit.data.RedditProvider;
+import nl.codesheep.android.pagesforreddit.data.models.RedditPost;
+import nl.codesheep.android.pagesforreddit.sync.PostFetcher;
 import nl.codesheep.android.pagesforreddit.sync.SyncAdapter;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int URL_LOADER = 0;
+    private PostPagerAdapter mPostPagerAdapter;
+    private ViewPager mViewPager;
+    private PostFetcher mPostFetcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +50,14 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        SyncAdapter.initializeSyncAdapter(this);
+//        SyncAdapter.initializeSyncAdapter(this);
+        mPostFetcher = new PostFetcher(this);
+        mPostFetcher.execute();
+
+        mPostPagerAdapter = new PostPagerAdapter(getSupportFragmentManager());
+        mViewPager = (ViewPager) findViewById(R.id.viewpager);
+        mViewPager.setAdapter(mPostPagerAdapter);
+        getSupportLoaderManager().initLoader(URL_LOADER, null, this);
     }
 
     @Override
@@ -60,6 +86,11 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_dismiss) {
+            int currentItem = mViewPager.getCurrentItem();
+            mViewPager.setCurrentItem(currentItem + 1);
+            if (currentItem % 18 == 0) {
+                mPostFetcher.execute();
+            }
             return true;
         }
 
@@ -81,5 +112,36 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case URL_LOADER:
+                return new CursorLoader(
+                        this,
+                        RedditProvider.Posts.POSTS,
+                        RedditPostsTable.PROJECTION,
+                        null,
+                        null,
+                        null
+                );
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        List<RedditPost> posts = new ArrayList<>();
+        while (data.moveToNext()) {
+            RedditPost post = RedditPost.createFromCursor(data);
+            posts.add(post);
+        }
+        mPostPagerAdapter.setPosts(posts);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

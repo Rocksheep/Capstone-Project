@@ -2,6 +2,8 @@ package nl.codesheep.android.pagesforreddit.data.models;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -9,7 +11,7 @@ import java.util.List;
 
 import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
 
-public class RedditPost {
+public class RedditPost implements Parcelable {
 
     public long mId = 0;
 
@@ -29,6 +31,38 @@ public class RedditPost {
     public String thumbnailUrl;
 
     public RedditPreview preview = null;
+
+    public RedditPost() {
+
+    }
+
+    protected RedditPost(Parcel in) {
+        mId = in.readLong();
+        redditId = in.readString();
+        subreddit = in.readString();
+        title = in.readString();
+        author = in.readString();
+        permalink = in.readString();
+        ups = in.readInt();
+        downs = in.readInt();
+        numComments = in.readInt();
+        selftext = in.readString();
+        url = in.readString();
+        imageUrl = in.readString();
+        thumbnailUrl = in.readString();
+    }
+
+    public static final Creator<RedditPost> CREATOR = new Creator<RedditPost>() {
+        @Override
+        public RedditPost createFromParcel(Parcel in) {
+            return new RedditPost(in);
+        }
+
+        @Override
+        public RedditPost[] newArray(int size) {
+            return new RedditPost[size];
+        }
+    };
 
     public ContentValues toContentValues() {
         ContentValues contentValues = new ContentValues();
@@ -83,6 +117,27 @@ public class RedditPost {
         redditPost.imageUrl = cursor.getString(cursor.getColumnIndex(RedditPostsTable.IMAGE_URL));
         redditPost.thumbnailUrl = cursor.getString(cursor.getColumnIndex(RedditPostsTable.THUMBNAIL_URL));
         return redditPost;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(redditId);
+        dest.writeString(subreddit);
+        dest.writeString(title);
+        dest.writeString(author);
+        dest.writeString(permalink);
+        dest.writeInt(ups);
+        dest.writeInt(downs);
+        dest.writeInt(numComments);
+        dest.writeString(selftext);
+        dest.writeString(url);
+        dest.writeString(imageUrl);
+        dest.writeString(thumbnailUrl);
     }
 
     public class RedditPreview {

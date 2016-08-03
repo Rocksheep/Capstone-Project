@@ -4,6 +4,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -39,8 +42,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ContentFragment extends Fragment implements Callback<List<DetailsListingResponse>> {
 
     public static final String TAG = ContentFragment.class.getSimpleName();
+    private static final int URL_LOADER = 0;
     private LayoutInflater mInflater;
-    private LinearLayout mCommentContainer;
+    private LinearLayout mContainer;
 
     public ContentFragment() {
 
@@ -50,56 +54,52 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mInflater = inflater;
-        Cursor cursor = getContext().getContentResolver().query(
-                RedditProvider.Posts.POSTS,
-                RedditPostsTable.PROJECTION,
-                null,
-                null,
-                null
-        );
+//        getLoaderManager().initLoader(URL_LOADER, null, this);
 
-        if (cursor == null) {
-            View rootView = inflater.inflate(R.layout.no_posts, container, false);
-            return rootView;
+//        if (cursor == null) {
+//            View rootView = inflater.inflate(R.layout.no_posts, container, false);
+//            return rootView;
+//        }
+//        else {
+            View rootView = mInflater.inflate(R.layout.content_fragment, container, false);
+            mContainer = (LinearLayout) rootView.findViewById(R.id.post_container);
+
+            Bundle bundle = getArguments();
+            RedditPost redditPost = bundle.getParcelable("post");
+
+
+        Log.d(TAG, "Loading image: " + redditPost.imageUrl);
+
+        if (redditPost.thumbnailUrl != null) {
+            Log.d(TAG, "Loading thumbnail " + redditPost.thumbnailUrl);
+            ImageView imageView = (ImageView) mContainer.findViewById(R.id.post_image);
+            Picasso.with(getContext()).load(redditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
         }
-        else {
-            View rootView = inflater.inflate(R.layout.content_fragment, container, false);
-            mCommentContainer = (LinearLayout) rootView.findViewById(R.id.post_container);
-            if (cursor.moveToNext()) {
-                RedditPost redditPost = RedditPost.createFromCursor(cursor);
-                Log.d(TAG, "Loading image: " + redditPost.imageUrl);
 
-                if (redditPost.thumbnailUrl != null) {
-                    Log.d(TAG, "Loading thumbnail " + redditPost.thumbnailUrl);
-                    ImageView imageView = (ImageView) rootView.findViewById(R.id.post_image);
-                    Picasso.with(getContext()).load(redditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
-                }
-
-                Log.d(TAG, "Full link: " + redditPost.permalink);
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(DetailsListingResponse.RedditComment.class, new RedditCommentDeserializer());
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(RedditService.BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
-                        .build();
-                RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
-                service.details(redditPost.permalink).enqueue(this);
+        Log.d(TAG, "Full link: " + redditPost.permalink);
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(DetailsListingResponse.RedditComment.class, new RedditCommentDeserializer());
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(RedditService.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
+                .build();
+        RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
+        service.details(redditPost.permalink).enqueue(this);
 
 
-                TextView titleView = (TextView) rootView.findViewById(R.id.post_title);
-                titleView.setText(redditPost.title);
-                TextView authorView = (TextView) rootView.findViewById(R.id.post_author);
-                String details = String.format(getContext().getString(R.string.post_details), redditPost.author, "2 hours ago", redditPost.subreddit);
-                authorView.setText(details);
-                TextView numCommentsView = (TextView) rootView.findViewById(R.id.post_comments);
-                String numComments = String.format(getContext().getString(R.string.num_comments), redditPost.numComments);
-                numCommentsView.setText(numComments);
-                TextView points = (TextView) rootView.findViewById(R.id.post_points);
-                points.setText(Integer.toString(redditPost.ups - redditPost.downs));
-            }
-            cursor.close();
-            return rootView;
-        }
+        TextView titleView = (TextView) mContainer.findViewById(R.id.post_title);
+        titleView.setText(redditPost.title);
+        TextView authorView = (TextView) mContainer.findViewById(R.id.post_author);
+        String details = String.format(getContext().getString(R.string.post_details), redditPost.author, "2 hours ago", redditPost.subreddit);
+        authorView.setText(details);
+        TextView numCommentsView = (TextView) mContainer.findViewById(R.id.post_comments);
+        String numComments = String.format(getContext().getString(R.string.num_comments), redditPost.numComments);
+        numCommentsView.setText(numComments);
+        TextView points = (TextView) mContainer.findViewById(R.id.post_points);
+        points.setText(Integer.toString(redditPost.ups - redditPost.downs));
+
+        return rootView;
+//        }
 
     }
 
@@ -129,7 +129,7 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
         for (DetailsListingResponse.RedditCommentListing listing : commentListings) {
             DetailsListingResponse.RedditComment comment = listing.comment;
             Log.d(TAG, "Comment: " + comment.body);
-            CardView commentView = (CardView) mInflater.inflate(R.layout.comment, mCommentContainer, false);
+            CardView commentView = (CardView) mInflater.inflate(R.layout.comment, mContainer, false);
             if (commentLevel > 0) {
                 ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) commentView.getLayoutParams();
                 layoutParams.leftMargin = 16 * commentLevel;
@@ -138,13 +138,72 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
             author.setText(comment.author);
             TextView body = (TextView) commentView.findViewById(R.id.comment_body);
             body.setText(comment.body);
-            mCommentContainer.addView(commentView);
+            mContainer.addView(commentView);
             if (comment.repliesListing != null) {
                 Log.d(TAG, "More comments found");
                 appendCommentsToView(comment.repliesListing.listing.commentListings, commentLevel + 1);
             }
         }
     }
+
+//    @Override
+//    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+//        switch (id) {
+//            case URL_LOADER:
+//                return new CursorLoader(
+//                        getActivity(),
+//                        RedditProvider.Posts.POSTS,
+//                        RedditPostsTable.PROJECTION,
+//                        null,
+//                        null,
+//                        null
+//                );
+//        }
+//        return null;
+//    }
+
+//    @Override
+//    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+//        if (cursor.moveToNext()) {
+//            mContainer.findViewById(R.id.post).setVisibility(View.VISIBLE);
+//            RedditPost redditPost = RedditPost.createFromCursor(cursor);
+//            Log.d(TAG, "Loading image: " + redditPost.imageUrl);
+//
+//            if (redditPost.thumbnailUrl != null) {
+//                Log.d(TAG, "Loading thumbnail " + redditPost.thumbnailUrl);
+//                ImageView imageView = (ImageView) mContainer.findViewById(R.id.post_image);
+//                Picasso.with(getContext()).load(redditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
+//            }
+//
+//            Log.d(TAG, "Full link: " + redditPost.permalink);
+//            GsonBuilder gsonBuilder = new GsonBuilder();
+//            gsonBuilder.registerTypeAdapter(DetailsListingResponse.RedditComment.class, new RedditCommentDeserializer());
+//            Retrofit retrofit = new Retrofit.Builder()
+//                    .baseUrl(RedditService.BASE_URL)
+//                    .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
+//                    .build();
+//            RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
+//            service.details(redditPost.permalink).enqueue(this);
+//
+//
+//            TextView titleView = (TextView) mContainer.findViewById(R.id.post_title);
+//            titleView.setText(redditPost.title);
+//            TextView authorView = (TextView) mContainer.findViewById(R.id.post_author);
+//            String details = String.format(getContext().getString(R.string.post_details), redditPost.author, "2 hours ago", redditPost.subreddit);
+//            authorView.setText(details);
+//            TextView numCommentsView = (TextView) mContainer.findViewById(R.id.post_comments);
+//            String numComments = String.format(getContext().getString(R.string.num_comments), redditPost.numComments);
+//            numCommentsView.setText(numComments);
+//            TextView points = (TextView) mContainer.findViewById(R.id.post_points);
+//            points.setText(Integer.toString(redditPost.ups - redditPost.downs));
+//        }
+//    }
+//
+//    @Override
+//    public void onLoaderReset(Loader<Cursor> loader) {
+//
+//    }
 
     private class RedditCommentDeserializer implements JsonDeserializer<DetailsListingResponse.RedditComment>{
 

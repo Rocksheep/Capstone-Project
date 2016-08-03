@@ -58,7 +58,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
 
         deleteOldData();
-        syncListings(service.hotPosts("awww"));
+        syncListings(service.hotPosts("awww", ""));
     }
 
     private void deleteOldData() {

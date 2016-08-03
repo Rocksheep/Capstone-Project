@@ -9,5 +9,6 @@ public class Listing {
 
     @SerializedName("children")
     public List<RedditPostMeta> redditPostMetas = new ArrayList<>();
+    public String after;
 
 }

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<fragment
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/content_fragment"
-    android:name="nl.codesheep.android.pagesforreddit.ContentFragment"
-    tools:layout="@layout/content_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E0E0E0"/>
+    android:orientation="vertical">
+    <nl.codesheep.android.pagesforreddit.LockableViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
