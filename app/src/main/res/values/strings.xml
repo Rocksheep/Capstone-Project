@@ -13,4 +13,8 @@
     <string name="no_posts">No posts available</string>
     <string name="num_comments">%1$d Comments</string>
     <string name="post.details">%1$s • %2$s • %3$s</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="title_activity_sub_reddit_list">SubRedditList</string>
+    <string name="manage_subreddits">Manage Subreddits</string>
 </resources>

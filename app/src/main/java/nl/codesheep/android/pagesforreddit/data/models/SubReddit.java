@@ -19,7 +19,7 @@ public class SubReddit {
         return contentValues;
     }
 
-    public static SubReddit fromCursor(Cursor cursor) {
+    public static SubReddit createFromCursor(Cursor cursor) {
         int idIndex = cursor.getColumnIndexOrThrow(SubRedditsTable.ID);
         int nameIndex = cursor.getColumnIndexOrThrow(SubRedditsTable.NAME);
 

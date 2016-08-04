@@ -78,6 +78,7 @@ public class RedditPost implements Parcelable {
         contentValues.put(RedditPostsTable.DOWNS, downs);
         contentValues.put(RedditPostsTable.NUM_COMMENTS, numComments);
         contentValues.put(RedditPostsTable.SELFTEXT, selftext);
+        contentValues.put(RedditPostsTable.URL, url);
 
         if (preview == null) {
             contentValues.put(RedditPostsTable.IMAGE_URL, url);
@@ -116,6 +117,7 @@ public class RedditPost implements Parcelable {
         redditPost.selftext = cursor.getString(cursor.getColumnIndex(RedditPostsTable.SELFTEXT));
         redditPost.imageUrl = cursor.getString(cursor.getColumnIndex(RedditPostsTable.IMAGE_URL));
         redditPost.thumbnailUrl = cursor.getString(cursor.getColumnIndex(RedditPostsTable.THUMBNAIL_URL));
+        redditPost.url = cursor.getString(cursor.getColumnIndex(RedditPostsTable.URL));
         return redditPost;
     }
 

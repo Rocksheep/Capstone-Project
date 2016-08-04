@@ -1,5 +1,8 @@
 package nl.codesheep.android.pagesforreddit;
 
+import android.content.ContentProvider;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -15,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -22,7 +26,10 @@ import java.util.List;
 
 import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
 import nl.codesheep.android.pagesforreddit.data.RedditProvider;
+import nl.codesheep.android.pagesforreddit.data.SubRedditsTable;
 import nl.codesheep.android.pagesforreddit.data.models.RedditPost;
+import nl.codesheep.android.pagesforreddit.data.models.SubReddit;
+import nl.codesheep.android.pagesforreddit.dialogs.AddSubRedditDialog;
 import nl.codesheep.android.pagesforreddit.sync.PostFetcher;
 import nl.codesheep.android.pagesforreddit.sync.SyncAdapter;
 
@@ -30,9 +37,11 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int URL_LOADER = 0;
+    public static final int MENU_LOADER = 1;
     private PostPagerAdapter mPostPagerAdapter;
     private ViewPager mViewPager;
     private PostFetcher mPostFetcher;
+    private SubMenu mSubMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +58,10 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        Menu menu = navigationView.getMenu();
+        mSubMenu = menu.addSubMenu("Subreddits");
+
+
 
 //        SyncAdapter.initializeSyncAdapter(this);
         mPostFetcher = new PostFetcher(this);
@@ -58,6 +71,7 @@ public class MainActivity extends AppCompatActivity
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mViewPager.setAdapter(mPostPagerAdapter);
         getSupportLoaderManager().initLoader(URL_LOADER, null, this);
+        getSupportLoaderManager().initLoader(MENU_LOADER, null, this);
     }
 
     @Override
@@ -106,7 +120,12 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.sign_in) {
 
         } else if (id == R.id.add_subreddit) {
-
+            AddSubRedditDialog dialog = new AddSubRedditDialog();
+            dialog.show(getSupportFragmentManager(), "test");
+        }
+        else if (id == R.id.manage_subreddits) {
+            Intent intent = new Intent(this, SubRedditList.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -126,18 +145,43 @@ public class MainActivity extends AppCompatActivity
                         null,
                         null
                 );
+            case MENU_LOADER:
+                return new CursorLoader(
+                        this,
+                        RedditProvider.SubReddits.SUBREDDITS,
+                        SubRedditsTable.PROJECTION,
+                        null,
+                        null,
+                        "Name DESC"
+                );
         }
         return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        List<RedditPost> posts = new ArrayList<>();
-        while (data.moveToNext()) {
-            RedditPost post = RedditPost.createFromCursor(data);
-            posts.add(post);
+        switch (loader.getId()) {
+            case URL_LOADER:
+                List<RedditPost> posts = new ArrayList<>();
+                while (data.moveToNext()) {
+                    RedditPost post = RedditPost.createFromCursor(data);
+                    posts.add(post);
+                }
+                mPostPagerAdapter.setPosts(posts);
+                break;
+            case MENU_LOADER:
+                mSubMenu.clear();
+                List<SubReddit> subReddits = new ArrayList<>();
+                while (data.moveToNext()) {
+                    SubReddit subReddit = SubReddit.createFromCursor(data);
+                    mSubMenu.add(subReddit.getName());
+                    subReddits.add(subReddit);
+                }
+                mPostFetcher.setSubReddits(subReddits);
+                mPostFetcher.execute();
+                mViewPager.setCurrentItem(0);
+                break;
         }
-        mPostPagerAdapter.setPosts(posts);
     }
 
     @Override

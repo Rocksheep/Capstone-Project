@@ -7,6 +7,10 @@
             android:id="@+id/sign_in"
             android:title="@string/sign_in"/>
         <item
+            android:icon="@drawable/ic_menu_manage"
+            android:id="@+id/manage_subreddits"
+            android:title="@string/manage_subreddits"/>
+        <item
             android:icon="@drawable/ic_menu_add"
             android:id="@+id/add_subreddit"
             android:title="@string/add_subreddit"/>

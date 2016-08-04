@@ -1,6 +1,8 @@
 package nl.codesheep.android.pagesforreddit;
 
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -45,6 +47,7 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
     private static final int URL_LOADER = 0;
     private LayoutInflater mInflater;
     private LinearLayout mContainer;
+    private RedditPost mRedditPost;
 
     public ContentFragment() {
 
@@ -54,29 +57,28 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mInflater = inflater;
-//        getLoaderManager().initLoader(URL_LOADER, null, this);
+        View rootView = mInflater.inflate(R.layout.content_fragment, container, false);
+        mContainer = (LinearLayout) rootView.findViewById(R.id.post_container);
 
-//        if (cursor == null) {
-//            View rootView = inflater.inflate(R.layout.no_posts, container, false);
-//            return rootView;
-//        }
-//        else {
-            View rootView = mInflater.inflate(R.layout.content_fragment, container, false);
-            mContainer = (LinearLayout) rootView.findViewById(R.id.post_container);
-
-            Bundle bundle = getArguments();
-            RedditPost redditPost = bundle.getParcelable("post");
+        Bundle bundle = getArguments();
+        mRedditPost = bundle.getParcelable("post");
 
 
-        Log.d(TAG, "Loading image: " + redditPost.imageUrl);
+        Log.d(TAG, "Loading image: " + mRedditPost.imageUrl);
 
-        if (redditPost.thumbnailUrl != null) {
-            Log.d(TAG, "Loading thumbnail " + redditPost.thumbnailUrl);
+        if (mRedditPost.thumbnailUrl != null) {
+            Log.d(TAG, "Loading thumbnail " + mRedditPost.thumbnailUrl);
             ImageView imageView = (ImageView) mContainer.findViewById(R.id.post_image);
-            Picasso.with(getContext()).load(redditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
+            Picasso.with(getContext()).load(mRedditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
+        }
+        else if (mRedditPost.selftext != null && !mRedditPost.selftext.equals("")) {
+            mContainer.findViewById(R.id.post_image).setVisibility(View.GONE);
+            TextView selfTextView = (TextView) mContainer.findViewById(R.id.post_selftext);
+            selfTextView.setText(mRedditPost.selftext);
+            selfTextView.setVisibility(View.VISIBLE);
         }
 
-        Log.d(TAG, "Full link: " + redditPost.permalink);
+        Log.d(TAG, "Full link: " + mRedditPost.permalink);
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(DetailsListingResponse.RedditComment.class, new RedditCommentDeserializer());
         Retrofit retrofit = new Retrofit.Builder()
@@ -84,19 +86,28 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
                 .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
                 .build();
         RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
-        service.details(redditPost.permalink).enqueue(this);
+        service.details(mRedditPost.permalink).enqueue(this);
 
 
         TextView titleView = (TextView) mContainer.findViewById(R.id.post_title);
-        titleView.setText(redditPost.title);
+        titleView.setText(mRedditPost.title);
+        titleView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mRedditPost.url != null && !mRedditPost.url.equals("")) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mRedditPost.url));
+                    startActivity(intent);
+                }
+            }
+        });
         TextView authorView = (TextView) mContainer.findViewById(R.id.post_author);
-        String details = String.format(getContext().getString(R.string.post_details), redditPost.author, "2 hours ago", redditPost.subreddit);
+        String details = String.format(getContext().getString(R.string.post_details), mRedditPost.author, "2 hours ago", mRedditPost.subreddit);
         authorView.setText(details);
         TextView numCommentsView = (TextView) mContainer.findViewById(R.id.post_comments);
-        String numComments = String.format(getContext().getString(R.string.num_comments), redditPost.numComments);
+        String numComments = String.format(getContext().getString(R.string.num_comments), mRedditPost.numComments);
         numCommentsView.setText(numComments);
         TextView points = (TextView) mContainer.findViewById(R.id.post_points);
-        points.setText(Integer.toString(redditPost.ups - redditPost.downs));
+        points.setText(Integer.toString(mRedditPost.ups - mRedditPost.downs));
 
         return rootView;
 //        }
@@ -145,65 +156,6 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
             }
         }
     }
-
-//    @Override
-//    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-//        switch (id) {
-//            case URL_LOADER:
-//                return new CursorLoader(
-//                        getActivity(),
-//                        RedditProvider.Posts.POSTS,
-//                        RedditPostsTable.PROJECTION,
-//                        null,
-//                        null,
-//                        null
-//                );
-//        }
-//        return null;
-//    }
-
-//    @Override
-//    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-
-//        if (cursor.moveToNext()) {
-//            mContainer.findViewById(R.id.post).setVisibility(View.VISIBLE);
-//            RedditPost redditPost = RedditPost.createFromCursor(cursor);
-//            Log.d(TAG, "Loading image: " + redditPost.imageUrl);
-//
-//            if (redditPost.thumbnailUrl != null) {
-//                Log.d(TAG, "Loading thumbnail " + redditPost.thumbnailUrl);
-//                ImageView imageView = (ImageView) mContainer.findViewById(R.id.post_image);
-//                Picasso.with(getContext()).load(redditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
-//            }
-//
-//            Log.d(TAG, "Full link: " + redditPost.permalink);
-//            GsonBuilder gsonBuilder = new GsonBuilder();
-//            gsonBuilder.registerTypeAdapter(DetailsListingResponse.RedditComment.class, new RedditCommentDeserializer());
-//            Retrofit retrofit = new Retrofit.Builder()
-//                    .baseUrl(RedditService.BASE_URL)
-//                    .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
-//                    .build();
-//            RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
-//            service.details(redditPost.permalink).enqueue(this);
-//
-//
-//            TextView titleView = (TextView) mContainer.findViewById(R.id.post_title);
-//            titleView.setText(redditPost.title);
-//            TextView authorView = (TextView) mContainer.findViewById(R.id.post_author);
-//            String details = String.format(getContext().getString(R.string.post_details), redditPost.author, "2 hours ago", redditPost.subreddit);
-//            authorView.setText(details);
-//            TextView numCommentsView = (TextView) mContainer.findViewById(R.id.post_comments);
-//            String numComments = String.format(getContext().getString(R.string.num_comments), redditPost.numComments);
-//            numCommentsView.setText(numComments);
-//            TextView points = (TextView) mContainer.findViewById(R.id.post_points);
-//            points.setText(Integer.toString(redditPost.ups - redditPost.downs));
-//        }
-//    }
-//
-//    @Override
-//    public void onLoaderReset(Loader<Cursor> loader) {
-//
-//    }
 
     private class RedditCommentDeserializer implements JsonDeserializer<DetailsListingResponse.RedditComment>{
 

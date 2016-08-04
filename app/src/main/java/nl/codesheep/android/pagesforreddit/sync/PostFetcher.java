@@ -5,7 +5,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import nl.codesheep.android.pagesforreddit.data.RedditProvider;
+import nl.codesheep.android.pagesforreddit.data.models.SubReddit;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.ListingResponse;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.RedditPostMeta;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.RedditService;
@@ -23,9 +27,15 @@ public class PostFetcher {
     private static final String TAG = PostFetcher.class.getSimpleName();
     private ContentResolver mContentResolver;
     private String mAfter = "";
+    private List<SubReddit> mSubReddits = new ArrayList<>();
 
     public PostFetcher (Context context) {
         mContentResolver = context.getContentResolver();
+    }
+
+    public void setSubReddits(List<SubReddit> subReddits) {
+        mSubReddits = subReddits;
+        mAfter = "";
     }
 
     public void execute() {
@@ -39,7 +49,14 @@ public class PostFetcher {
         if (mAfter.equals("")) {
             deleteOldData();
         }
-        syncListings(service.hotPosts("awww", mAfter));
+
+        String subs = "";
+        if (mSubReddits.size() > 0) {
+            for (SubReddit subReddit : mSubReddits) {
+                subs += "+" + subReddit.getName();
+            }
+            syncListings(service.hotPosts(subs, mAfter));
+        }
     }
 
     private void deleteOldData() {
@@ -52,6 +69,7 @@ public class PostFetcher {
             @Override
             public void onResponse(Call<ListingResponse> call, Response<ListingResponse> response) {
                 Log.d(TAG, "Response received");
+                Log.d(TAG, call.request().url().toString());
                 mAfter = response.body().listing.after;
                 for (RedditPostMeta postMeta : response.body().listing.redditPostMetas) {
                     ContentValues values = postMeta.redditPost.toContentValues();
