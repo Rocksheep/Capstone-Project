@@ -21,6 +21,7 @@ public interface RedditPostsTable  {
     @DataType(DataType.Type.TEXT) String URL = "url";
     @DataType(DataType.Type.TEXT) String IMAGE_URL = "image_url";
     @DataType(DataType.Type.TEXT) String THUMBNAIL_URL = "thumb_url";
+    @DataType(DataType.Type.TEXT) String VIDEO_URL = "video_url";
 
 
 
@@ -37,6 +38,8 @@ public interface RedditPostsTable  {
             SELFTEXT,
             URL,
             IMAGE_URL,
-            THUMBNAIL_URL
+            THUMBNAIL_URL,
+            VIDEO_URL
     };
+
 }

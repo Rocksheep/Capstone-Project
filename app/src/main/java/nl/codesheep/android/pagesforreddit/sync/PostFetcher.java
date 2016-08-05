@@ -46,7 +46,7 @@ public class PostFetcher {
 
         RedditService.ListingCalls service = retrofit.create(RedditService.ListingCalls.class);
 
-        if (mAfter.equals("")) {
+        if (mAfter.equals("") && !mSubReddits.isEmpty()) {
             deleteOldData();
         }
 

@@ -1,14 +1,10 @@
 package nl.codesheep.android.pagesforreddit;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,8 +26,6 @@ import com.squareup.picasso.Picasso;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
-import nl.codesheep.android.pagesforreddit.data.RedditProvider;
 import nl.codesheep.android.pagesforreddit.data.models.RedditPost;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.DetailsListingResponse;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.RedditService;
@@ -69,6 +63,11 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
         if (mRedditPost.thumbnailUrl != null) {
             Log.d(TAG, "Loading thumbnail " + mRedditPost.thumbnailUrl);
             ImageView imageView = (ImageView) mContainer.findViewById(R.id.post_image);
+            imageView.setVisibility(View.VISIBLE);
+            if (mRedditPost.videoUrl != null) {
+                Log.d(TAG, "Video found");
+                mContainer.findViewById(R.id.post_video).setVisibility(View.VISIBLE);
+            }
             Picasso.with(getContext()).load(mRedditPost.thumbnailUrl.replace("&amp;", "&")).into(imageView);
         }
         else if (mRedditPost.selftext != null && !mRedditPost.selftext.equals("")) {
