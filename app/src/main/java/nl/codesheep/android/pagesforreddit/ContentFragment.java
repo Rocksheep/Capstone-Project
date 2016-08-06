@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -100,7 +101,9 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
             }
         });
         TextView authorView = (TextView) mContainer.findViewById(R.id.post_author);
-        String details = String.format(getContext().getString(R.string.post_details), mRedditPost.author, "2 hours ago", mRedditPost.subreddit);
+
+        String timePassed = (String) DateUtils.getRelativeTimeSpanString(mRedditPost.created * 1000, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS);
+        String details = String.format(getContext().getString(R.string.post_details), mRedditPost.author, timePassed, mRedditPost.subreddit);
         authorView.setText(details);
         TextView numCommentsView = (TextView) mContainer.findViewById(R.id.post_comments);
         String numComments = String.format(getContext().getString(R.string.num_comments), mRedditPost.numComments);
@@ -138,7 +141,6 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
     private void appendCommentsToView(List<DetailsListingResponse.RedditCommentListing> commentListings, int commentLevel) {
         for (DetailsListingResponse.RedditCommentListing listing : commentListings) {
             DetailsListingResponse.RedditComment comment = listing.comment;
-            Log.d(TAG, "Comment: " + comment.body);
             CardView commentView = (CardView) mInflater.inflate(R.layout.comment, mContainer, false);
             if (commentLevel > 0) {
                 ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) commentView.getLayoutParams();
@@ -146,11 +148,12 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
             }
             TextView author = (TextView) commentView.findViewById(R.id.comment_author);
             author.setText(comment.author);
+            TextView time = (TextView) commentView.findViewById(R.id.comment_time);
+            time.setText(DateUtils.getRelativeTimeSpanString(mRedditPost.created * 1000, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS));
             TextView body = (TextView) commentView.findViewById(R.id.comment_body);
             body.setText(comment.body);
             mContainer.addView(commentView);
             if (comment.repliesListing != null) {
-                Log.d(TAG, "More comments found");
                 appendCommentsToView(comment.repliesListing.listing.commentListings, commentLevel + 1);
             }
         }
@@ -160,8 +163,6 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
 
         @Override
         public DetailsListingResponse.RedditComment deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            Log.d(TAG, "Testing if object " + json.isJsonObject());
-            Log.d(TAG, "Used json: " + json.toString());
             JsonObject object = json.getAsJsonObject();
             JsonElement replies = object.get("replies");
 
@@ -169,8 +170,7 @@ public class ContentFragment extends Fragment implements Callback<List<DetailsLi
                     .excludeFieldsWithoutExposeAnnotation().create();
             DetailsListingResponse.RedditComment comment = gson.fromJson(object, DetailsListingResponse.RedditComment.class);
             if (replies != null && replies.isJsonObject()) {
-                DetailsListingResponse listing = context.deserialize(replies, DetailsListingResponse.class);
-                comment.repliesListing = listing;
+                comment.repliesListing = context.deserialize(replies, DetailsListingResponse.class);
             }
             else {
                 comment.repliesListing = null;

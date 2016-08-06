@@ -30,6 +30,8 @@ public class RedditPost implements Parcelable {
     public String imageUrl;
     public String thumbnailUrl;
     public String videoUrl;
+    @SerializedName("created_utc")
+    public long created;
 
     public Media media;
 
@@ -54,6 +56,7 @@ public class RedditPost implements Parcelable {
         imageUrl = in.readString();
         thumbnailUrl = in.readString();
         videoUrl = in.readString();
+        created = in.readLong();
     }
 
     public static final Creator<RedditPost> CREATOR = new Creator<RedditPost>() {
@@ -83,6 +86,7 @@ public class RedditPost implements Parcelable {
         contentValues.put(RedditPostsTable.NUM_COMMENTS, numComments);
         contentValues.put(RedditPostsTable.SELFTEXT, selftext);
         contentValues.put(RedditPostsTable.URL, url);
+        contentValues.put(RedditPostsTable.CREATED, created);
 
         if (media != null) {
             videoUrl = url;
@@ -102,7 +106,7 @@ public class RedditPost implements Parcelable {
                     break;
                 }
             }
-            if (sourceUrl == null) {
+            if (sourceUrl == null && !images.isEmpty()) {
 
                 sourceUrl = images.get(images.size() - 1).url;
             }
@@ -127,6 +131,7 @@ public class RedditPost implements Parcelable {
         redditPost.thumbnailUrl = cursor.getString(cursor.getColumnIndex(RedditPostsTable.THUMBNAIL_URL));
         redditPost.url = cursor.getString(cursor.getColumnIndex(RedditPostsTable.URL));
         redditPost.videoUrl = cursor.getString(cursor.getColumnIndex(RedditPostsTable.VIDEO_URL));
+        redditPost.created = cursor.getLong(cursor.getColumnIndex((RedditPostsTable.CREATED)));
         return redditPost;
     }
 
@@ -150,6 +155,7 @@ public class RedditPost implements Parcelable {
         dest.writeString(imageUrl);
         dest.writeString(thumbnailUrl);
         dest.writeString(videoUrl);
+        dest.writeLong(created);
     }
 
     public class RedditPreview {

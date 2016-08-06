@@ -28,13 +28,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:text="2 hours ago"/>
+                tools:text="2 hours ago"/>
         </LinearLayout>
         <TextView
             android:id="@+id/comment_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="This cat is the cutest cat in the world and it's mine! OMG SO CUTE."
+            tools:text="This cat is the cutest cat in the world and it's mine! OMG SO CUTE."
+            android:textDirection="locale"
             />
     </LinearLayout>
 </android.support.v7.widget.CardView>

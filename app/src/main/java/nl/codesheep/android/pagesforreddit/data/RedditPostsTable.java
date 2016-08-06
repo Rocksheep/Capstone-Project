@@ -22,6 +22,8 @@ public interface RedditPostsTable  {
     @DataType(DataType.Type.TEXT) String IMAGE_URL = "image_url";
     @DataType(DataType.Type.TEXT) String THUMBNAIL_URL = "thumb_url";
     @DataType(DataType.Type.TEXT) String VIDEO_URL = "video_url";
+    @DataType(DataType.Type.INTEGER) String CREATED = "created";
+
 
 
 
@@ -39,7 +41,8 @@ public interface RedditPostsTable  {
             URL,
             IMAGE_URL,
             THUMBNAIL_URL,
-            VIDEO_URL
+            VIDEO_URL,
+            CREATED
     };
 
 }

@@ -17,4 +17,12 @@
     <string name="cancel">Cancel</string>
     <string name="title_activity_sub_reddit_list">SubRedditList</string>
     <string name="manage_subreddits">Manage Subreddits</string>
+    <string name="no_subreddits_selected">No Subreddits selected</string>
+    <string name="subreddit_not_found">Subreddit not found</string>
+    <string name="couldnt_reach_server">I could not reach the reddit server. Please check your internet connection.</string>
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="no_connection">Couldn\'t connect to server</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="pref_next_page_string">next_page_string</string>
 </resources>
