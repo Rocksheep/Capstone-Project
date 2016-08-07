@@ -3,17 +3,22 @@ package nl.codesheep.android.pagesforreddit.data.models;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import nl.codesheep.android.pagesforreddit.data.SubRedditsTable;
 
 public class SubReddit {
 
-    private long id = 0;
+    private long mId = 0;
+    @SerializedName("display_name")
+    @Expose
     private String name;
 
     public ContentValues toContentValues() {
         ContentValues contentValues = new ContentValues();
-        if (id != 0) {
-            contentValues.put(SubRedditsTable.ID, id);
+        if (mId != 0) {
+            contentValues.put(SubRedditsTable.ID, mId);
         }
         contentValues.put(SubRedditsTable.NAME, name);
         return contentValues;
@@ -30,11 +35,11 @@ public class SubReddit {
     }
 
     public long getId() {
-        return id;
+        return mId;
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.mId = id;
     }
 
     public String getName() {

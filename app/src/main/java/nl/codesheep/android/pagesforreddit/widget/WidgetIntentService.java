@@ -1,6 +1,7 @@
 package nl.codesheep.android.pagesforreddit.widget;
 
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import nl.codesheep.android.pagesforreddit.MainActivity;
 import nl.codesheep.android.pagesforreddit.R;
 import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
 import nl.codesheep.android.pagesforreddit.data.RedditProvider;
@@ -63,6 +65,9 @@ public class WidgetIntentService extends IntentService {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 views.setContentDescription(R.id.widget_title, post.title);
             }
+            Intent launchIntent = new Intent(this, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, launchIntent, 0);
+            views.setOnClickPendingIntent(R.id.widget_container, pendingIntent);
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
     }

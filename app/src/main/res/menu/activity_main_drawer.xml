@@ -5,9 +5,13 @@
         <item
             android:icon="@drawable/ic_menu_person"
             android:id="@+id/sign_in"
-            android:title="@string/sign_in"/>
+            android:title="@string/import_subs"/>
         <item
-            android:icon="@drawable/ic_menu_manage"
+            android:id="@+id/refreh_posts"
+            android:icon="@drawable/ic_refresh"
+            android:title="@string/refresh_posts" />
+        <item
+            android:icon="@drawable/ic_settings"
             android:id="@+id/manage_subreddits"
             android:title="@string/manage_subreddits"/>
         <item

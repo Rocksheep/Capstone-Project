@@ -1,9 +1,11 @@
 package nl.codesheep.android.pagesforreddit;
 
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.LoaderManager;
@@ -21,6 +23,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +35,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import nl.codesheep.android.pagesforreddit.data.RedditPostsTable;
 import nl.codesheep.android.pagesforreddit.data.RedditProvider;
@@ -38,7 +43,9 @@ import nl.codesheep.android.pagesforreddit.data.SubRedditsTable;
 import nl.codesheep.android.pagesforreddit.data.models.RedditPost;
 import nl.codesheep.android.pagesforreddit.data.models.SubReddit;
 import nl.codesheep.android.pagesforreddit.helpers.Utility;
+import nl.codesheep.android.pagesforreddit.sync.ImportSubredditService;
 import nl.codesheep.android.pagesforreddit.sync.RedditFetchService;
+import nl.codesheep.android.pagesforreddit.sync.RedditRestClient;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.ListingResponse;
 import nl.codesheep.android.pagesforreddit.sync.redditapi.RedditService;
 import retrofit2.Call;
@@ -61,6 +68,16 @@ public class MainActivity extends AppCompatActivity
     private AdView mAdView;
     private List<SubReddit> mSubReddits = new ArrayList<>();
     private FirebaseAnalytics mFirebaseAnalytics;
+
+    private static String TOKEN_URL ="access_token";
+    private static String OAUTH_URL ="https://www.reddit.com/api/v1/authorize.compact";
+    private static String OAUTH_SCOPE="read,mysubreddits";
+    private static String DURATION = "permanent";
+    private static String REDIRECT_URI="http://codesheep.nl";
+    private static String CLIENT_ID = "FBhLdL7Os6zMZQ";
+    private static String DEVICE_ID = UUID.randomUUID().toString();
+    private static String GRANT_TYPE="https://oauth.reddit.com/grants/installed_client";
+    private static String GRANT_TYPE2="authorization_code";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,10 +102,10 @@ public class MainActivity extends AppCompatActivity
         mAdView.loadAd(adRequest);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         mFirebaseAnalytics.logEvent("open_app", new Bundle());
-        Utility.setNextPageString(this, "");
+
 
 //        SyncAdapter.initializeSyncAdapter(this);
-        fetchPosts();
+//        fetchPosts();
 
 
         mPostPagerAdapter = new PostPagerAdapter(getSupportFragmentManager());
@@ -148,15 +165,21 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.sign_in) {
-
-        } else if (id == R.id.add_subreddit) {
-            showAddSubRedditDialog();
-        }
-        else if (id == R.id.manage_subreddits) {
-            Intent intent = new Intent(this, SubRedditList.class);
-            startActivity(intent);
+        switch (id) {
+            case R.id.sign_in:
+                showLoginDialog();
+                break;
+            case R.id.refreh_posts:
+                Utility.setNextPageString(this, "");
+                fetchPosts();
+                break;
+            case R.id.add_subreddit:
+                showAddSubRedditDialog();
+                break;
+            case R.id.manage_subreddits:
+                Intent intent = new Intent(this, SubRedditList.class);
+                startActivity(intent);
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -299,5 +322,55 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "Loading data for subs: " + subs);
             startService(intent);
         }
+    }
+
+    // https://github.com/pratik98/Reddit-OAuth/blob/master/app/src/main/java/io/github/pratik98/reddit_oauth/MainActivity.java
+    private void showLoginDialog() {
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.login_dialog);
+        WebView web = (WebView) dialog.findViewById(R.id.web_view);
+        web.getSettings().setJavaScriptEnabled(true);
+        String url = OAUTH_URL + "?client_id=" + CLIENT_ID + "&response_type=token&state=TEST&redirect_uri=" + REDIRECT_URI + "&scope=" + OAUTH_SCOPE;
+        web.loadUrl(url);
+
+        web.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                view.loadUrl(url);
+                return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+
+                Log.d(TAG, url);
+                if (url.contains("access_token=")) {
+                    Uri uri = Uri.parse(url);
+                    String fragment = uri.getFragment();
+                    String[] queryParameters = fragment.split("&");
+                    String accessToken = "";
+                    for (String parameter : queryParameters) {
+                        if (parameter.contains("access_token")) {
+                            accessToken = parameter.split("=")[1];
+                            break;
+                        }
+                    }
+                    Log.i(TAG, "Token: " + accessToken);
+                    Utility.setToken(MainActivity.this, accessToken);
+
+                    Intent intent = new Intent(MainActivity.this, ImportSubredditService.class);
+                    startService(intent);
+                    dialog.dismiss();
+                }
+                else if (url.contains("error=access_denied")) {
+                    Log.i(TAG, "Access denied");
+                    dialog.dismiss();
+                }
+            }
+        });
+        dialog.show();
+        dialog.setCancelable(true);
     }
 }

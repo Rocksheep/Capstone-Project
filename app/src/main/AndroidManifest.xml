@@ -33,7 +33,13 @@
         <activity
             android:name=".SubRedditList"
             android:label="@string/title_activity_sub_reddit_list"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="nl.codesheep.android.pagesforreddit.MainActivity"/>
+        </activity>
         <activity
             android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"></activity>
@@ -51,6 +57,7 @@
 
         <service android:name=".widget.WidgetIntentService"/>
         <service android:name=".sync.RedditFetchService" />
+        <service android:name=".sync.ImportSubredditService" />
     </application>
 
 </manifest>

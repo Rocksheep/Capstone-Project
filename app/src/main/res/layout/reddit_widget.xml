@@ -2,11 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#fff"
     android:padding="@dimen/widget_margin">
     <LinearLayout
+        android:id="@+id/widget_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#fff"
+
         android:orientation="vertical">
 
         <ImageView
@@ -24,8 +26,7 @@
             android:layout_margin="8dp"
             android:contentDescription="@string/appwidget_text"
             tools:text="@string/appwidget_text"
-            android:textColor="#000"
-            android:textSize="18sp" />
+            android:textColor="#000" />
 
     </LinearLayout>
 </FrameLayout>
